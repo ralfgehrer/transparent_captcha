@@ -1,0 +1,119 @@
+TransparentCaptcha
+==================
+
+The usage of a CAPTCHA (Completely Automated Public Turing test to Tell Computers and Humans Apart) helps you to
+defend your Blog or other websites from bots. In contrast to common CAPTCHA, this one requires no user interaction!  
+As a result of its transparency, it is barrier-free. It already combines several transparent techniques and allows you
+to implement further ones easily with the aid of a generator.
+
+So just give it a try.
+
+
+Installation
+============
+1.) Execute "script/plugin install git://github.com/ralfgehrer/transparent_captcha.git".
+
+2.) Create a new migration file, called "CreateTransparentCaptcha", with the following actions:
+
+	  def self.up
+	    create_table :captcha_secrets do |t|
+	      t.datetime :timestamp
+	      t.timestamps
+	    end
+	  end
+	
+	  def self.down
+	    drop_table :captcha_secrets
+	  end
+
+3.) Optionally, personalize the configurations by editing transparent_captcha/config.yml.
+
+4.) Now you are ready to use the plugin. Have a look at the chapter "Example". 
+
+
+Example
+=======
+
+1.a) A view to create a new entry could look like this.
+
+		<% captcha_form_tag "/controller/called_action" do -%>				 
+								 
+		  <%= embed_additional_tags %>
+		  
+		  <p>
+		  <%= captcha_label_for(:field_name,"field description") %><br />
+		  <%= captcha_text_field_tag(:field_name) %>
+		  </p>
+		  
+		  <p>
+		  <%= captcha_label_for(:another_:field_name,"field description") %><br />
+		  <%= captcha_text_field_tag(:another_field_name) %>
+		  </p>
+		  		  	
+		  <%= submit_tag %>
+		<% end -%>
+
+
+1.b) To edit entities, have a look at this view.
+
+		<% captcha_form_for @model do -%>
+						 					 
+		  <%= embed_additional_tags %>
+		  
+		  <p>
+		  <%= captcha_label_for(:field_name,"field description") %><br />
+		  <%= captcha_text_field_tag(:field_name, @model.field_name) %>
+		  </p>
+		  
+		  <p>
+		  <%= captcha_label_for(:another_field_name,"field description") %><br />
+		  <%= captcha_text_field_tag(:another_field_name, @model.another_field_name) %>
+		  </p>
+		  
+		  	
+		  <%= submit_tag "Update" %>
+		<% end -%>
+
+
+2.) In order to execute the CAPTCHA you must insert the following lines of code into the corresponding controller.
+
+		  before_filter :initiate_captcha, :only => [:new, :create, :edit, :update]
+		  before_filter :prepare_form, :only => [:new, :edit]
+		  before_filter :process_form, :only => [:create, :update]
+		  
+		  def initiate_captcha
+		    @captcha = TransparentCaptcha.new([:field_name, :another_field_name])
+		  end
+		  
+		  def prepare_form
+		    @captcha.prepare_form()
+		  end
+		  
+		  def process_form
+		    @captcha.process_form(params)
+		  end
+	
+3.) @captcha.values reveals the params of the submitted form. Please use "@model = Model.new(@captcha.values)" instead of "@model = Model.new(params[:model])"!
+		  
+4.)	You may want to check @captcha.valid? to distinguish the actions based on the result of the CAPTCHA.
+
+			if @captcha.valid?
+			  # your original code
+			else
+			  flash[:notice] = @captcha.get_error_message
+			  # captcha was not valid --> your personal error handling
+			end	  
+			
+5.) HAVE FUN !
+
+
+Generator
+=========
+
+You are welcome to extend the plugin by introducing a new transparent technique. You do not have
+to start from scratch. The captcha_technique_generator creates all necessary folders and files. 
+
+	script/generate captcha_technique YourOwnTechniqueName
+
+______________________________________________________________________________________
+Copyright (c) 2009 - Ralf Gehrer and Fabian Lindenberg, released under the MIT license

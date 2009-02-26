@@ -1,0 +1,17 @@
+encryption:
+    :enabled: true
+    :key: key123
+
+captcha_techniques:
+    js_calculation: true
+    js_mouse_keyboard_interaction: true
+    honey_pot: true
+    timestamp: true
+    
+garbage_collector:
+    :maximum_age_of_record:
+        :number_of_days: 0
+        :number_of_hours: 0
+        :number_of_minutes: 30
+    :triggered_on_submit: true
+    
